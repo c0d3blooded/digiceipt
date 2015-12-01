@@ -114,11 +114,10 @@ public class MainMenu extends AppCompatActivity
             }
             //write
             else {
-
+                Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+                NdefMessage message = createNdef("Test String");
+                writeNdefMessage(tag, message);
             }
-            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-            NdefMessage message = createNdef("Test String");
-            writeNdefMessage(tag, message);
         }
     }
 
