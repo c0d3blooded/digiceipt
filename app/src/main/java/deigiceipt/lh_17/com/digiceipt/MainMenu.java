@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -23,21 +25,34 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.nfc.NfcAdapter;
+import android.widget.ExpandableListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.parse.ParseObject;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
-public class MainMenu extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<ParseObject>>{
+
+    public static final int LOADER_ID = 1001;
 
     public static final String TAG = "Main";
-    private TextView txtNFC;
+    private TextView txtNFC, txtEmpty;
     private NfcAdapter nfcAdapter;
     private ToggleButton btnToggle;
+    private ExpandableListView listView;
+    private ReceiptListAdapter listAdapter;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +60,10 @@ public class MainMenu extends AppCompatActivity
         setContentView(R.layout.activity_main_menu);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        listView = (ExpandableListView) findViewById(R.id.listView);
+        txtEmpty = (TextView) findViewById(R.id.txtEmpty);
         txtNFC = (TextView) findViewById(R.id.txtNfc);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         btnToggle = (ToggleButton) findViewById(R.id.btnToggle);
         btnToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,15 +80,41 @@ public class MainMenu extends AppCompatActivity
 
         else if(!nfcAdapter.isEnabled())
             Toast.makeText(this, "NFC is off", Toast.LENGTH_SHORT).show();
+        listAdapter = new ReceiptListAdapter(this, new ArrayList<ParseObject>());
+        listView.setAdapter(listAdapter);
+        /*ParseObject testObject = new ParseObject(Receipts.PARSE_CLASS_RECEIPTS);
+        testObject.put(Receipts.PARSE_FIELD_NAME, "Test Vendor 1");
+        testObject.put(Receipts.PARSE_FIELD_DATE, new Date());
+        testObject.put(Receipts.PARSE_FIELD_ADDRESS, "UMass Amherst");
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        ArrayList<String> objs = new ArrayList<>();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        JSONObject item1 = new JSONObject();
+        JSONObject item2 = new JSONObject();
+        JSONObject item3 = new JSONObject();
+        try {
+            item1.put(Receipts.JSON_FIELD_DESCRIPTION, "Water bottle!");
+            item1.put(Receipts.JSON_FIELD_PRICE, 50.5);
+            item1.put(Receipts.JSON_FIELD_UPC_CODE, "128489301293");
+
+            item2.put(Receipts.JSON_FIELD_DESCRIPTION, "Another Water bottle!");
+            item2.put(Receipts.JSON_FIELD_PRICE, 230.5);
+            item2.put(Receipts.JSON_FIELD_UPC_CODE, "145434123123");
+
+            item3.put(Receipts.JSON_FIELD_DESCRIPTION, "Another nother Water bottle!");
+            item3.put(Receipts.JSON_FIELD_PRICE, 0.5);
+            item3.put(Receipts.JSON_FIELD_UPC_CODE, "3522341442353");
+
+            objs.add(item1.toString());
+            objs.add(item2.toString());
+            objs.add(item3.toString());
+        }
+        catch (JSONException e) {e.printStackTrace();}
+
+        testObject.put(Receipts.PARSE_FIELD_RECEIPTS, objs);
+
+        testObject.saveInBackground();*/
+        getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
     }
 
 
@@ -230,15 +274,6 @@ public class MainMenu extends AppCompatActivity
         super.onPause();
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -262,28 +297,32 @@ public class MainMenu extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
+    public Loader<ArrayList<ParseObject>> onCreateLoader(int id, Bundle args) {
+        progressBar.setVisibility(View.VISIBLE);
+        listView.setVisibility(View.GONE);
+        txtEmpty.setVisibility(View.GONE);
+        return new LoaderReceipts(this);
+    }
 
-        if (id == R.id.nav_camara) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+    @Override
+    public void onLoadFinished(Loader<ArrayList<ParseObject>> loader, ArrayList<ParseObject> data) {
+        progressBar.setVisibility(View.GONE);
+        if(data.size() > 0) {
+            txtEmpty.setVisibility(View.GONE);
+            listView.setVisibility(View.VISIBLE);
+            listAdapter.swapItems(data);
+            for(int a=0; a<listAdapter.getGroupCount(); a++){
+                listView.expandGroup(a);
+            }
         }
+        else {
+            listView.setVisibility(View.GONE);
+            txtEmpty.setVisibility(View.VISIBLE);
+        }
+    }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+    @Override
+    public void onLoaderReset(Loader<ArrayList<ParseObject>> loader) {
     }
 }

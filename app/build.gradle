@@ -22,6 +22,12 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:22.+'
-    compile 'com.android.support:design:22.+'
+    compile 'com.android.support:appcompat-v7:23.1.0'
+    compile 'com.android.support:support-v13:23.1.0'
+    compile 'com.android.support:cardview-v7:23.1.0'
+    compile 'com.android.support:recyclerview-v7:23.1.0'
+    compile 'com.android.support:design:23.1.0'
+    compile 'com.parse:parse-android:1.13.0'
+    compile files('libs/joda-time-2.9.2.jar')
+    //compile files('libs/parse-android-1.13.0.jar')
 }
