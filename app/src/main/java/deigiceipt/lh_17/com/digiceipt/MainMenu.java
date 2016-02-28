@@ -65,12 +65,12 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
         txtNFC = (TextView) findViewById(R.id.txtNfc);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         btnToggle = (ToggleButton) findViewById(R.id.btnToggle);
-        btnToggle.setOnClickListener(new View.OnClickListener() {
+        /*btnToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleReadWrite(v);
             }
-        });
+        });*/
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if(nfcAdapter == null){
             Toast.makeText(this, "Does not support NFC", Toast.LENGTH_SHORT).show();
@@ -147,7 +147,7 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
         if(intent.hasExtra(NfcAdapter.EXTRA_TAG)){
             Toast.makeText(this, "NFC intent received", Toast.LENGTH_LONG).show();
             //read
-            if(btnToggle.isChecked()){
+            //if(btnToggle.isChecked()){
                 Parcelable[] parcelables = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
                 if(parcelables != null && parcelables.length > 0){
                     readTextFromTag((NdefMessage)parcelables[0]);
@@ -155,13 +155,13 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
                 else {
                     Toast.makeText(this, "No Ndef messages", Toast.LENGTH_SHORT).show();
                 }
-            }
+            //}
             //write
-            else {
+            /*else {
                 Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
                 NdefMessage message = createNdef("Test String");
                 writeNdefMessage(tag, message);
-            }
+            }*/
         }
     }
 
@@ -170,6 +170,8 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
         if(records != null && records.length > 0) {
             NdefRecord record = records[0];
             String tagContent = getTextFromNdefRecord(record);
+            Receipts.saveReceipt(tagContent);
+            getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
             txtNFC.setText(tagContent);
         }
         else {

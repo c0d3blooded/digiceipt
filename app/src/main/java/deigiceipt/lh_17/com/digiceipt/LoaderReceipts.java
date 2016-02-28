@@ -35,7 +35,7 @@ public class LoaderReceipts extends AsyncTaskLoader<ArrayList<ParseObject>> {
         ArrayList<ParseObject> results = new ArrayList<>();
         ParseQuery<ParseObject> query = new ParseQuery<ParseObject>(Receipts.PARSE_CLASS_RECEIPTS);
         query.orderByDescending(Receipts.PARSE_FIELD_DATE);
-        //query.fromLocalDatastore();
+        query.fromLocalDatastore();
         try {
             List<ParseObject> objs = query.find();
             if(objs != null) {
