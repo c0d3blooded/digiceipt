@@ -1,6 +1,8 @@
 package deigiceipt.lh_17.com.digiceipt;
 
 import android.app.PendingIntent;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.nfc.NdefMessage;
@@ -14,6 +16,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -53,11 +56,17 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
     private ExpandableListView listView;
     private ReceiptListAdapter listAdapter;
     private ProgressBar progressBar;
+    private SearchView searchView;
+
+    private MainMenu activity;
+
+    private String query = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+        activity = this;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         listView = (ExpandableListView) findViewById(R.id.listView);
@@ -281,6 +290,32 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        //implement the searchview onto the fragment for the stored workouts page only
+        final MenuItem searchItem = menu.findItem(R.id.menu_search);
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) searchItem.getActionView();
+        if (searchView == null)
+            Log.i(TAG, "Could not set up search view, view is null.");
+        else {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            searchView.setIconified(true);
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String s) {
+                    searchView.clearFocus();
+                    setQuery(s); //sets fragment query
+                    getSupportLoaderManager().restartLoader(LOADER_ID, null, activity);
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String s) {
+                    setQuery(s); //sets fragment query
+                    getSupportLoaderManager().restartLoader(LOADER_ID, null, activity);
+                    return true;
+                }
+            });
+        }
         return true;
     }
 
@@ -304,7 +339,7 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
         progressBar.setVisibility(View.VISIBLE);
         listView.setVisibility(View.GONE);
         txtEmpty.setVisibility(View.GONE);
-        return new LoaderReceipts(this);
+        return new LoaderReceipts(this, query);
     }
 
     @Override
@@ -326,5 +361,9 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
 
     @Override
     public void onLoaderReset(Loader<ArrayList<ParseObject>> loader) {
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
     }
 }
