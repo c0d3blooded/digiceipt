@@ -61,6 +61,7 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
     private MainMenu activity;
 
     private String query = "";
+    private boolean localLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,44 +92,8 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
             Toast.makeText(this, "NFC is off", Toast.LENGTH_SHORT).show();
         listAdapter = new ReceiptListAdapter(this, new ArrayList<ParseObject>());
         listView.setAdapter(listAdapter);
-        /*ParseObject testObject = new ParseObject(Receipts.PARSE_CLASS_RECEIPTS);
-        testObject.put(Receipts.PARSE_FIELD_NAME, "Test Vendor 1");
-        testObject.put(Receipts.PARSE_FIELD_DATE, new Date());
-        testObject.put(Receipts.PARSE_FIELD_ADDRESS, "UMass Amherst");
-
-        ArrayList<String> objs = new ArrayList<>();
-
-        JSONObject item1 = new JSONObject();
-        JSONObject item2 = new JSONObject();
-        JSONObject item3 = new JSONObject();
-        try {
-            item1.put(Receipts.JSON_FIELD_DESCRIPTION, "Water bottle!");
-            item1.put(Receipts.JSON_FIELD_PRICE, 50.5);
-            item1.put(Receipts.JSON_FIELD_UPC_CODE, "128489301293");
-
-            item2.put(Receipts.JSON_FIELD_DESCRIPTION, "Another Water bottle!");
-            item2.put(Receipts.JSON_FIELD_PRICE, 230.5);
-            item2.put(Receipts.JSON_FIELD_UPC_CODE, "145434123123");
-
-            item3.put(Receipts.JSON_FIELD_DESCRIPTION, "Another nother Water bottle!");
-            item3.put(Receipts.JSON_FIELD_PRICE, 0.5);
-            item3.put(Receipts.JSON_FIELD_UPC_CODE, "3522341442353");
-
-            objs.add(item1.toString());
-            objs.add(item2.toString());
-            objs.add(item3.toString());
-        }
-        catch (JSONException e) {e.printStackTrace();}
-
-        testObject.put(Receipts.PARSE_FIELD_RECEIPTS, objs);
-
-        testObject.saveInBackground();*/
+        localLoading = false;
         getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
-    }
-
-
-    public void toggleReadWrite(View view){
-        txtNFC.setText("");
     }
 
     public String getTextFromNdefRecord(NdefRecord ndefRecord){
@@ -180,6 +145,7 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
             NdefRecord record = records[0];
             String tagContent = getTextFromNdefRecord(record);
             Receipts.saveReceipt(tagContent);
+            localLoading = true;
             getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
             txtNFC.setText(tagContent);
         }
@@ -231,7 +197,6 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
             Log.e(TAG, e.getMessage());
         }
     }
-
 
     private NdefRecord createTextRecord(String str){
         try{
@@ -304,6 +269,7 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
                 public boolean onQueryTextSubmit(String s) {
                     searchView.clearFocus();
                     setQuery(s); //sets fragment query
+                    localLoading = true;
                     getSupportLoaderManager().restartLoader(LOADER_ID, null, activity);
                     return true;
                 }
@@ -311,6 +277,7 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
                 @Override
                 public boolean onQueryTextChange(String s) {
                     setQuery(s); //sets fragment query
+                    localLoading = true;
                     getSupportLoaderManager().restartLoader(LOADER_ID, null, activity);
                     return true;
                 }
@@ -339,7 +306,7 @@ public class MainMenu extends AppCompatActivity implements LoaderManager.LoaderC
         progressBar.setVisibility(View.VISIBLE);
         listView.setVisibility(View.GONE);
         txtEmpty.setVisibility(View.GONE);
-        return new LoaderReceipts(this, query);
+        return new LoaderReceipts(this, query, localLoading);
     }
 
     @Override

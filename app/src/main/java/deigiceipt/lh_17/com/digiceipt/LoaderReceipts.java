@@ -19,10 +19,12 @@ public class LoaderReceipts extends AsyncTaskLoader<ArrayList<ParseObject>> {
 
     private Context context;
     private String mQuery = null;
+    private boolean local;
 
-    public LoaderReceipts(Context _context, String query) {
+    public LoaderReceipts(Context _context, String query, boolean local) {
         super(_context);
         context = _context;
+        this.local = local;
         if(query != null)
             this.mQuery = query.trim();
     }
@@ -51,7 +53,8 @@ public class LoaderReceipts extends AsyncTaskLoader<ArrayList<ParseObject>> {
         }
 
         query.orderByDescending(Receipts.PARSE_FIELD_DATE);
-        //query.fromLocalDatastore();
+        if(local)
+            query.fromLocalDatastore();
         try {
             List<ParseObject> objs = query.find();
             if(objs != null) {
