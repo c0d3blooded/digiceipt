@@ -1,6 +1,7 @@
 package deigiceipt.lh_17.com.digiceipt;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,7 +66,12 @@ public class ReceiptListAdapter extends BaseExpandableListAdapter {
         txtPrice.setText(Receipts.formatPrice(getTotalPrice(receipt)));
         DateTime date = new DateTime(receipt.getDate(Receipts.PARSE_FIELD_DATE));
         txtDate.setText(date.toString(Receipts.getTimeFormatter()));
-
+        v.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent receiptView = new Intent();
+            }
+        });
         return v;
     }
 
