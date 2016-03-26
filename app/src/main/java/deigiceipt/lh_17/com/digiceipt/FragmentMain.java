@@ -102,7 +102,7 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
             mListener = (ReceiptActionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement ReceiptActionListener");
         }
     }
 

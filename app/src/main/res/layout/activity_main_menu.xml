@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" android:id="@+id/drawer_layout"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:fitsSystemWindows="true" tools:openDrawer="start">
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-        android:layout_height="match_parent" android:fitsSystemWindows="true"
-        tools:context=".ActivityMain"
-        android:orientation="vertical">
-
-        <android.support.v7.widget.Toolbar android:id="@+id/toolbar"
-            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-            android:theme="@style/AppTheme.AppBarOverlay"
-            android:background="?attr/colorPrimary" app:popupTheme="@style/AppTheme.PopupOverlay" />
-
+    android:fitsSystemWindows="true">
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -64,11 +52,4 @@
                 android:visibility="gone" />
         </RelativeLayout>
 
-    </LinearLayout>
-    <android.support.design.widget.NavigationView android:id="@+id/nav_view"
-        android:layout_width="wrap_content" android:layout_height="match_parent"
-        android:layout_gravity="start" android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header_main_menu"
-        app:menu="@menu/activity_main_menu_drawer" />
-
-</android.support.v4.widget.DrawerLayout>
+</FrameLayout>

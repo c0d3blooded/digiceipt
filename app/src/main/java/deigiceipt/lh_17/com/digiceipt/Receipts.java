@@ -64,12 +64,35 @@ public class Receipts {
         return "$ " + String.format( "%.2f", price );
     }
 
+    public static String getDateString(ParseObject receipt){
+        DateTime date = new DateTime(receipt.getDate(Receipts.PARSE_FIELD_DATE));
+        return date.toString(getDateFormatter());
+    }
+
+    public static String getTimeString(ParseObject receipt){
+        DateTime date = new DateTime(receipt.getDate(Receipts.PARSE_FIELD_DATE));
+        return date.toString(getTimeFormatter());
+    }
+
     public static DateTimeFormatter getDateFormatter(){
         return DateTimeFormat.forPattern("MMM. dd, yyyy");
     }
 
     public static DateTimeFormatter getTimeFormatter(){
-        return DateTimeFormat.forPattern("KK:mm aa");
+        return DateTimeFormat.forPattern("hh:mm aa");
+    }
+
+    public static double getTotalPrice(ParseObject obj){
+        List<String> receipts = obj.getList(Receipts.PARSE_FIELD_RECEIPTS);
+        double total = 0.0;
+        for(String receipt: receipts){
+            try {
+                JSONObject objReceipt = new JSONObject(receipt);
+                total += objReceipt.getDouble(Receipts.JSON_FIELD_PRICE);
+            }
+            catch (JSONException e) {e.printStackTrace();}
+        }
+        return total;
     }
 }
 

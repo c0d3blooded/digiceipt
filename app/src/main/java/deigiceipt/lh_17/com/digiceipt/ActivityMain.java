@@ -1,42 +1,15 @@
 package deigiceipt.lh_17.com.digiceipt;
 
-import android.app.PendingIntent;
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.Tag;
-import android.nfc.tech.Ndef;
-import android.nfc.tech.NdefFormatable;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
-import android.support.v7.widget.SearchView;
-import android.util.Log;
-import android.view.View;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.nfc.NfcAdapter;
-import android.widget.ExpandableListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.parse.ParseObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Locale;
 
 public class ActivityMain extends AppCompatActivity implements FragmentMain.ReceiptActionListener {
 
@@ -47,14 +20,14 @@ public class ActivityMain extends AppCompatActivity implements FragmentMain.Rece
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_menu);
+        setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         final FragmentManager fm = getSupportFragmentManager();
         if (fm.getBackStackEntryCount() < 1) {
             fragmentMain = new FragmentMain();
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            FragmentTransaction ft = getFragmentTransaction();
             ft.add(R.id.container, fragmentMain, FragmentMain.TAG);
             ft.commit();
             ActionBar actionBar = getSupportActionBar();
@@ -84,9 +57,17 @@ public class ActivityMain extends AppCompatActivity implements FragmentMain.Rece
     @Override
     public void onOpenReceipt(ParseObject receipt) {
         FragmentReceipt fragmentLogin = new FragmentReceipt();
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        fragmentLogin.setReceipt(receipt);
+        FragmentTransaction ft = getFragmentTransaction();
         ft.add(R.id.container, fragmentLogin, FragmentReceipt.TAG);
         ft.addToBackStack(FragmentReceipt.TAG);
         ft.commit();
+    }
+
+    //default fragment transaction for the activity
+    public FragmentTransaction getFragmentTransaction(){
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right);
+        return ft;
     }
 }

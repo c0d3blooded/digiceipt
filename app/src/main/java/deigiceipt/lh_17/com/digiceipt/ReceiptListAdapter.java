@@ -1,7 +1,6 @@
 package deigiceipt.lh_17.com.digiceipt;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,12 +20,19 @@ import java.util.List;
  * Created by LH-17 on 2/26/2016.
  */
 public class ReceiptListAdapter extends BaseExpandableListAdapter {
+    private FragmentMain.ReceiptActionListener receiptInterface;
     Context context;
     ArrayList<ArrayList<ParseObject>> receipts;
 
     public ReceiptListAdapter(Context context, ArrayList<ParseObject> objects){
         this.context = context;
         organizeReceipts(objects);
+        if (context instanceof FragmentMain.ReceiptActionListener) {
+            receiptInterface = (FragmentMain.ReceiptActionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement ReceiptActionListener");
+        }
     }
 
     @Override
@@ -40,8 +46,7 @@ public class ReceiptListAdapter extends BaseExpandableListAdapter {
         }
         ParseObject firstReceipt = receipts.get(groupPosition).get(0);
         TextView txtDate = (TextView) v.findViewById(R.id.txtDate);
-        DateTime date = new DateTime(firstReceipt.getDate(Receipts.PARSE_FIELD_DATE));
-        txtDate.setText(date.toString(Receipts.getDateFormatter()));
+        txtDate.setText(Receipts.getDateString(firstReceipt));
 
         return v;
     }
@@ -55,7 +60,7 @@ public class ReceiptListAdapter extends BaseExpandableListAdapter {
                     (Context.LAYOUT_INFLATER_SERVICE);
             v = inflater.inflate(R.layout.row_receipts, parent, false);
         }
-        ParseObject receipt = receipts.get(groupPosition).get(childPosition);
+        final ParseObject receipt = receipts.get(groupPosition).get(childPosition);
         TextView txtName = (TextView) v.findViewById(R.id.txtName);
         TextView txtPrice = (TextView) v.findViewById(R.id.txtPrice);
         TextView txtDate = (TextView) v.findViewById(R.id.txtDate);
@@ -63,13 +68,12 @@ public class ReceiptListAdapter extends BaseExpandableListAdapter {
 
         txtName.setText(receipt.getString(Receipts.PARSE_FIELD_NAME));
         txtAddress.setText(receipt.getString(Receipts.PARSE_FIELD_ADDRESS));
-        txtPrice.setText(Receipts.formatPrice(getTotalPrice(receipt)));
-        DateTime date = new DateTime(receipt.getDate(Receipts.PARSE_FIELD_DATE));
-        txtDate.setText(date.toString(Receipts.getTimeFormatter()));
+        txtPrice.setText(Receipts.formatPrice(Receipts.getTotalPrice(receipt)));
+        txtDate.setText(Receipts.getTimeString(receipt));
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent receiptView = new Intent();
+                receiptInterface.onOpenReceipt(receipt);
             }
         });
         return v;
@@ -116,20 +120,6 @@ public class ReceiptListAdapter extends BaseExpandableListAdapter {
 
         }
     }
-
-    public double getTotalPrice(ParseObject obj){
-        List<String> receipts = obj.getList(Receipts.PARSE_FIELD_RECEIPTS);
-        double total = 0.0;
-        for(String receipt: receipts){
-            try {
-                JSONObject objReceipt = new JSONObject(receipt);
-                total += objReceipt.getDouble(Receipts.JSON_FIELD_PRICE);
-            }
-            catch (JSONException e) {e.printStackTrace();}
-        }
-        return total;
-    }
-
 
 
     @Override
