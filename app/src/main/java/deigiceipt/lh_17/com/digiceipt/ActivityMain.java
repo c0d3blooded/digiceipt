@@ -64,6 +64,15 @@ public class ActivityMain extends AppCompatActivity implements FragmentMain.Rece
         ft.commit();
     }
 
+    @Override
+    public void onDeleteReceipt(ParseObject receipt) {
+        receipt.deleteEventually();
+        onBackPressed();
+        FragmentMain fragmentMain = (FragmentMain) getSupportFragmentManager().findFragmentByTag(FragmentMain.TAG);
+        if(fragmentMain != null)
+            fragmentMain.runLoader(true);
+    }
+
     //default fragment transaction for the activity
     public FragmentTransaction getFragmentTransaction(){
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();

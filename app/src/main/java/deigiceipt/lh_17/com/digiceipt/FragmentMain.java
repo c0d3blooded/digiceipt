@@ -14,6 +14,7 @@ import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.SearchView;
@@ -61,6 +62,7 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
     public interface ReceiptActionListener {
         void onNewReceipt(Intent intent);
         void onOpenReceipt(ParseObject receipt);
+        void onDeleteReceipt(ParseObject receipt);
     }
 
     @Override
@@ -90,7 +92,7 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
         listAdapter = new ReceiptListAdapter(getActivity(), new ArrayList<ParseObject>());
         listView.setAdapter(listAdapter);
         localLoading = false;
-        getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+        runLoader(false);
         return view;
     }
 
@@ -151,7 +153,7 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
                     searchView.clearFocus();
                     setQuery(s); //sets fragment query
                     localLoading = true;
-                    getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, thisFragment);
+                    runLoader(true);
                     return true;
                 }
 
@@ -159,7 +161,7 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
                 public boolean onQueryTextChange(String s) {
                     setQuery(s); //sets fragment query
                     localLoading = true;
-                   getActivity(). getSupportLoaderManager().restartLoader(LOADER_ID, null, thisFragment);
+                    runLoader(true);
                     return true;
                 }
             });
@@ -167,6 +169,10 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
         super.onCreateOptionsMenu(menu, inflater);
     }
 
+    public void runLoader(boolean local){
+        localLoading = local;
+        getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, thisFragment);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -174,10 +180,13 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id){
+            case android.R.id.home:
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                int backStackCount = fm.getBackStackEntryCount();
+                if(backStackCount > 0)
+                    getActivity().onBackPressed();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -200,8 +209,7 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
             NdefRecord record = records[0];
             String tagContent = getTextFromNdefRecord(record);
             Receipts.saveReceipt(tagContent);
-            localLoading = true;
-            getActivity().getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+            runLoader(true);
             txtNFC.setText(tagContent);
         }
         else {

@@ -1,10 +1,7 @@
 package deigiceipt.lh_17.com.digiceipt;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,11 +15,6 @@ import android.widget.TextView;
 
 import com.parse.ParseObject;
 
-import org.joda.time.DateTime;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-
 
 public class FragmentReceipt extends Fragment {
 
@@ -33,6 +25,7 @@ public class FragmentReceipt extends Fragment {
     private RecyclerView listItems;
 
     private ReceiptItemListAdapter listAdapter;
+    public FragmentMain.ReceiptActionListener receiptInterface;
 
     public FragmentReceipt() {
         // Required empty public constructor
@@ -44,6 +37,12 @@ public class FragmentReceipt extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
+        if (getActivity() instanceof FragmentMain.ReceiptActionListener) {
+            receiptInterface = (FragmentMain.ReceiptActionListener) getActivity();
+        } else {
+            throw new RuntimeException(getActivity().toString()
+                    + " must implement ReceiptActionListener");
+        }
     }
 
     @Override
@@ -101,10 +100,11 @@ public class FragmentReceipt extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id){
+            case R.id.action_delete:
+                receiptInterface.onDeleteReceipt(receipt);
+                break;
         }
-
         return super.onOptionsItemSelected(item);
     }
 }
