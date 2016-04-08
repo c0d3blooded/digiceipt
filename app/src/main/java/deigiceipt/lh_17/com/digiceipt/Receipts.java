@@ -1,6 +1,8 @@
 package deigiceipt.lh_17.com.digiceipt;
 
+import com.parse.ParseACL;
 import com.parse.ParseObject;
+import com.parse.ParseUser;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -54,6 +56,8 @@ public class Receipts {
             receipt.put(PARSE_FIELD_ADDRESS, objTag.getString(JSON_FIELD_ADDRESS));
             receipt.put(PARSE_FIELD_RECEIPTS, receiptItems);
             receipt.put(PARSE_FIELD_DATE, new Date(objTag.getLong(JSON_FIELD_DATE)));
+            if(ParseUser.getCurrentUser() != null)
+                receipt.setACL(new ParseACL(ParseUser.getCurrentUser()));
             receipt.saveEventually();
         } catch (JSONException e) {
             e.printStackTrace();

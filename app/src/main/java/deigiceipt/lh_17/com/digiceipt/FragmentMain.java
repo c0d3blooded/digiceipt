@@ -18,7 +18,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,7 +40,7 @@ import java.util.Locale;
 
 
 public class FragmentMain extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<ParseObject>> {
-    private ReceiptActionListener mListener;
+    private ReceiptActionListener receiptInterface;
     public static final String TAG = "FragmentMain";
     private FragmentMain thisFragment;
     private TextView txtNFC, txtEmpty;
@@ -60,6 +59,7 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
     }
 
     public interface ReceiptActionListener {
+        void onLogout();
         void onNewReceipt(Intent intent);
         void onOpenReceipt(ParseObject receipt);
         void onDeleteReceipt(ParseObject receipt);
@@ -101,7 +101,7 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
         super.onAttach(context);
         thisFragment = this;
         if (context instanceof ReceiptActionListener) {
-            mListener = (ReceiptActionListener) context;
+            receiptInterface = (ReceiptActionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement ReceiptActionListener");
@@ -111,7 +111,7 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        receiptInterface = null;
     }
 
     @Override
@@ -186,6 +186,9 @@ public class FragmentMain extends Fragment implements LoaderManager.LoaderCallba
                 int backStackCount = fm.getBackStackEntryCount();
                 if(backStackCount > 0)
                     getActivity().onBackPressed();
+                break;
+            case R.id.action_logout:
+                receiptInterface.onLogout();
                 break;
         }
 

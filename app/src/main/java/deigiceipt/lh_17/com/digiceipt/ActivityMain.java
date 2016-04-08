@@ -8,14 +8,17 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.widget.Toast;
 
 import com.parse.ParseObject;
+import com.parse.ParseUser;
+import com.parse.ui.ParseLoginBuilder;
 
 public class ActivityMain extends AppCompatActivity implements FragmentMain.ReceiptActionListener {
 
 
     public static final String TAG = "ActivityMain";
-    private FragmentMain fragmentMain;
+    private static final int LOGIN_REQUEST = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,10 +29,20 @@ public class ActivityMain extends AppCompatActivity implements FragmentMain.Rece
 
         final FragmentManager fm = getSupportFragmentManager();
         if (fm.getBackStackEntryCount() < 1) {
-            fragmentMain = new FragmentMain();
-            FragmentTransaction ft = getFragmentTransaction();
-            ft.add(R.id.container, fragmentMain, FragmentMain.TAG);
-            ft.commit();
+            if(ParseUser.getCurrentUser() != null) {
+                FragmentMain fragmentMain = new FragmentMain();
+                FragmentTransaction ft = getFragmentTransaction();
+                ft.add(R.id.container, fragmentMain, FragmentMain.TAG);
+                ft.commit();
+            }
+            else {
+                // User clicked to log in.
+                ParseLoginBuilder loginBuilder = new ParseLoginBuilder(
+                        ActivityMain.this);
+                loginBuilder.setFacebookLoginEnabled(false);
+                loginBuilder.setTwitterLoginEnabled(false);
+                startActivityForResult(loginBuilder.build(), LOGIN_REQUEST);
+            }
             ActionBar actionBar = getSupportActionBar();
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -38,6 +51,16 @@ public class ActivityMain extends AppCompatActivity implements FragmentMain.Rece
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(ParseUser.getCurrentUser() != null) {
+            FragmentMain fragmentMain = new FragmentMain();
+            FragmentTransaction ft = getFragmentTransaction();
+            ft.add(R.id.container, fragmentMain, FragmentMain.TAG);
+            ft.commit();
+        }
+    }
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -46,6 +69,17 @@ public class ActivityMain extends AppCompatActivity implements FragmentMain.Rece
             onNewReceipt(intent);
     }
 
+
+    @Override
+    public void onLogout() {
+        ParseUser.logOut();
+        // User clicked to log in.
+        ParseLoginBuilder loginBuilder = new ParseLoginBuilder(
+                ActivityMain.this);
+        loginBuilder.setFacebookLoginEnabled(false);
+        loginBuilder.setTwitterLoginEnabled(false);
+        startActivityForResult(loginBuilder.build(), LOGIN_REQUEST);
+    }
 
     @Override
     public void onNewReceipt(Intent intent) {
@@ -71,6 +105,7 @@ public class ActivityMain extends AppCompatActivity implements FragmentMain.Rece
         FragmentMain fragmentMain = (FragmentMain) getSupportFragmentManager().findFragmentByTag(FragmentMain.TAG);
         if(fragmentMain != null)
             fragmentMain.runLoader(true);
+        Toast.makeText(this, "Receipt has been deleted", Toast.LENGTH_SHORT).show();
     }
 
     //default fragment transaction for the activity
